@@ -1,0 +1,7 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+tensorflow==2.15.0
+torch==2.1.2
+catboost==1.2.3
+mlflow==2.9.0
+prometheus-client==0.19.0
+sentry-sdk==1.40.0
