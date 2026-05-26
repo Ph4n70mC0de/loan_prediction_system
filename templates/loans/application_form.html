@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}New Loan Application{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="mb-1">New Loan Application</h1>
+                    <p class="text-muted mb-0">Fill out the form to apply for a loan</p>
+                </div>
+                <a href="{% url 'loan-list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Applications
+                </a>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" id="loanApplicationForm">
+                {% csrf_token %}
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="bi bi-cash-coin me-2"></i>Loan Details</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Loan Amount ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" name="amount" class="form-control" placeholder="" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Tenure (months)</label>
+                                <input type="number" name="tenure" class="form-control" placeholder="" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Loan Purpose</label>
+                            <textarea name="purpose" class="form-control" rows="3"
+                                placeholder="Describe the purpose of this loan..." required></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="bi bi-briefcase me-2"></i>Employment Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Employment Status</label>
+                                <select name="employment_status" class="form-select" required>
+                                    <option value="">Select status</option>
+                                    <option value="employed">Employed</option>
+                                    <option value="self_employed">Self Employed</option>
+                                    <option value="unemployed">Unemployed</option>
+                                    <option value="student">Student</option>
+                                    <option value="retired">Retired</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Years Employed</label>
+                                <input type="number" name="years_employed" class="form-control" placeholder="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0"><i class="bi bi-piggy-bank me-2"></i>Financial Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Monthly Income ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="" name="monthly_income" class="form-control"
+                                        placeholder="" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Monthly Expenses ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="" name="monthly_expense" class="form-control"
+                                        placeholder="" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Credit Score</label>
+                                <input type="number" name="credit_score" class="form-control" placeholder="" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Existing Loans ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="" name="existing_loans" class="form-control" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Existing EMIs ($)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="number" step="" name="existing_emis" class="form-control" value="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Additional Information</label>
+                            <textarea name="additional_info" class="form-control" rows="3"
+                                placeholder="Any additional information to support your application..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="bi bi-paperclip me-2"></i>Documents</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Income Proof</label>
+                                <input type="file" name="income_proof" class="form-control"
+                                    accept=".pdf,.jpg,.png,.jpeg">
+                                <small class="text-muted">PDF, JPG, or PNG files only</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Identity Proof</label>
+                                <input type="file" name="identity_proof" class="form-control"
+                                    accept=".pdf,.jpg,.png,.jpeg">
+                                <small class="text-muted">PDF, JPG, or PNG files only</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'loan-list' %}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="bi bi-send me-2"></i>Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

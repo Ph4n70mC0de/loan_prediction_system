@@ -1,0 +1,221 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Admin Dashboard</h1>
+            <p class="text-muted mb-0">Monitor and manage loan applications</p>
+        </div>
+        <a href="{% url 'admin-dashboard' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-clipboard-check me-2"></i>Review Applications
+        </a>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-stat-card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1 opacity-75">Total Applications</h6>
+                            <h3 class="card-text mb-0">{{ stats.total_applications }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-file-text"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-stat-card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1 opacity-75">Approved</h6>
+                            <h3 class="card-text mb-0">{{ stats.approved }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-check-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-stat-card bg-danger text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1 opacity-75">Rejected</h6>
+                            <h3 class="card-text mb-0">{{ stats.rejected }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-x-circle"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card dashboard-stat-card bg-warning text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title mb-1 opacity-75">Pending Review</h6>
+                            <h3 class="card-text mb-0">{{ stats.pending }}</h3>
+                        </div>
+                        <div class="stat-icon">
+                            <i class="bi bi-clock"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Applications</h5>
+                    <span class="text-muted">{{ recent_applications|length }} applications</span>
+                </div>
+                <div class="card-body">
+                    {% if recent_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Applicant</th>
+                                    <th>Amount</th>
+                                    <th>Risk Level</th>
+                                    <th>Status</th>
+                                    <th class="text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for loan in recent_applications %}
+                                <tr>
+                                    <td><strong>#{{ loan.id }}</strong></td>
+                                    <td>{{ loan.user.email }}</td>
+                                    <td>${{ loan.amount|floatformat:2 }}</td>
+                                    <td>
+                                        {% with prediction=loan.prediction %}
+                                        {% if prediction %}
+                                        <span class="badge risk-{% if prediction.risk_level == 'low' %}low{% elif prediction.risk_level == 'medium' %}medium{% else %}high{% endif %}">
+                                            {{ prediction.risk_level|title }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                        {% endwith %}
+                                    </td>
+                                    <td>
+                                        <span class="badge status-{% if loan.status == 'approved' %}approved{% elif loan.status == 'rejected' %}rejected{% else %}pending{% endif %}">
+                                            {{ loan.status|title }}
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'loan-review-detail' loan.id %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-eye me-1"></i>Review
+                                        </a>
+                                        {% if loan.status == 'draft' or loan.status == 'submitted' %}
+                                        <a href="{% url 'loan-delete' loan.id %}" class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('Are you sure you want to delete this application?')">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-file-text text-muted" style="font-size: 3rem;"></i>
+                        <p class="text-muted mt-3 mb-0">No recent applications</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Risk Distribution</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="riskChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0">Quick Stats</h5>
+                        </div>
+                        <div class="card-body">
+                            <ul class="list-unstyled mb-0">
+                                <li class="d-flex justify-content-between py-2 border-bottom">
+                                    <span class="text-muted">Avg Credit Score</span>
+                                    <strong>{{ stats.avg_credit_score|floatformat:0 }}</strong>
+                                </li>
+                                <li class="d-flex justify-content-between py-2 border-bottom">
+                                    <span class="text-muted">Avg Loan Amount</span>
+                                    <strong>${{ stats.avg_loan_amount|floatformat:2 }}</strong>
+                                </li>
+                                <li class="d-flex justify-content-between py-2">
+                                    <span class="text-muted">Approval Rate</span>
+                                    <strong>{{ stats.approval_rate }}%</strong>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ctx = document.getElementById('riskChart').getContext('2d');
+new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+        datasets: [{
+            data: [{{ risk_distribution.low|default:0 }}, {{ risk_distribution.medium|default:0 }}, {{ risk_distribution.high|default:0 }}],
+            backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { 
+                position: 'bottom',
+                labels: {
+                    padding: 20,
+                    usePointStyle: true
+                }
+            }
+        },
+        cutout: '70%'
+    }
+});
+</script>
+{% endblock %}
