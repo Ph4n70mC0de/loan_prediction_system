@@ -1,0 +1,159 @@
+{% extends 'base.html' %}
+
+{% block title %}Loan Application #{{ loan.id }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Loan Application #{{ loan.id }}</h1>
+            <p class="text-muted mb-0">Applied on {{ loan.created_at|date:"M d, Y" }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge status-{% if loan.status == 'approved' %}approved{% elif loan.status == 'rejected' %}rejected{% else %}pending{% endif %} fs-5">
+                {{ loan.status|title }}
+            </span>
+            {% if loan.status == 'draft' or loan.status == 'submitted' %}
+            <a href="{% url 'loan-delete' loan.id %}" class="btn btn-outline-danger btn-sm"
+               onclick="return confirm('Are you sure you want to delete this application?')">
+                <i class="bi bi-trash me-1"></i>Delete
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    {% if not prediction %}
+    <div class="alert alert-info d-flex align-items-center" role="alert">
+        <i class="bi bi-info-circle-fill me-2"></i>
+        <div>
+            <strong>Generating prediction...</strong> The AI prediction is being calculated. This page will refresh automatically.
+        </div>
+        <div class="ms-auto">
+            <div class="spinner-border spinner-border-sm" role="status"></div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Loan Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="detail-item mb-3">
+                                <span class="text-muted d-block">Amount</span>
+                                <strong class="fs-5">${{ loan.amount|floatformat:2 }}</strong>
+                            </div>
+                            <div class="detail-item mb-3">
+                                <span class="text-muted d-block">Tenure</span>
+                                <strong>{{ loan.tenure }} months</strong>
+                            </div>
+                            <div class="detail-item mb-3">
+                                <span class="text-muted d-block">Employment Status</span>
+                                <strong>{{ loan.get_employment_status_display }}</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="detail-item mb-3">
+                                <span class="text-muted d-block">Monthly Income</span>
+                                <strong>${{ loan.monthly_income|floatformat:2 }}</strong>
+                            </div>
+                            <div class="detail-item mb-3">
+                                <span class="text-muted d-block">Monthly Expenses</span>
+                                <strong>${{ loan.monthly_expense|floatformat:2 }}</strong>
+                            </div>
+                            <div class="detail-item mb-3">
+                                <span class="text-muted d-block">Credit Score</span>
+                                <strong>{{ loan.credit_score }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <span class="text-muted d-block">Purpose</span>
+                        <p class="mb-0">{{ loan.purpose }}</p>
+                    </div>
+                </div>
+            </div>
+            
+            {% if prediction %}
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-robot me-2"></i>AI Prediction</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted">Approval Probability</small>
+                                <div class="display-6 text-{% if prediction.probability_score >= 0.7 %}success{% elif prediction.probability_score >= 0.4 %}warning{% else %}danger{% endif %} mb-0">
+                                    {{ prediction.probability_score|floatformat:0 }}%
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted">Risk Level</small>
+                                <div>
+                                    <span class="badge risk-{% if prediction.risk_level == 'low' %}low{% elif prediction.risk_level == 'medium' %}medium{% else %}high{% endif %} fs-5">
+                                        {{ prediction.get_risk_level_display }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted">Recommendation</small>
+                                <div class="mt-2">
+                                    <strong>{{ prediction.get_recommendation_display }}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="bi bi-paperclip me-2"></i>Documents</h5>
+                </div>
+                <div class="card-body">
+                    {% if loan.documents.all %}
+                    {% for doc in loan.documents.all %}
+                    <div class="document-item d-flex align-items-center p-2 bg-light rounded mb-2">
+                        <i class="bi bi-file-pdf text-danger me-2 fs-5"></i>
+                        <div class="flex-grow-1">
+                            <strong class="d-block">{{ doc.get_document_type_display }}</strong>
+                            <small class="text-muted">PDF Document</small>
+                        </div>
+                        <a href="{{ doc.file.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-folder-x text-muted" style="font-size: 2.5rem;"></i>
+                        <p class="text-muted mt-2 mb-0">No documents uploaded</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+{% if not prediction %}
+<script>
+    setTimeout(function() {
+        window.location.reload();
+    }, 5000);
+</script>
+{% endif %}
+{% endblock %}
